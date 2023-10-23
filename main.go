@@ -25,6 +25,10 @@ func main() {
 }
 
 func view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 	payload := ps.ByName("payload")
 
 	im, err := PayloadToImage(payload)
@@ -34,9 +38,6 @@ func view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	w.Header().Set("Content-Type", "image/png")
 	// cors headers
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	// cache in the browser for 1 year
 	w.Header().Set("Cache-Control", "public, max-age=31536000")
@@ -46,6 +47,9 @@ func view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 var RLM = rl.NewRatelimitManager(1, 30)
 
 func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+
 	iden := r.Header.Get("X-Forwarded-For")
 	if iden == "" {
 		iden = r.RemoteAddr
