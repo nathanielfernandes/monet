@@ -80,6 +80,16 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		message = message[:256]
 	}
 
+	// most common rune
+	found := make(map[rune]int)
+	c := '1'
+	for _, r := range payload {
+		found[r]++
+		if found[r] > found[c] {
+			c = r
+		}
+	}
+
 	raw_payload := DiscPayload{
 		Content: "",
 		Embeds: []struct {
@@ -95,7 +105,7 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				Title:       author,
 				Description: message,
 				URL:         "https://monet.b-cdn.net/" + payload,
-				Color:       16748546,
+				Color:       ColorToDecimal(Lookup(c)),
 				Image: struct {
 					URL string `json:"url"`
 				}{

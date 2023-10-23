@@ -35,3 +35,7 @@ func hexToRgba(hex string) color.RGBA {
 func Lookup(c rune) color.RGBA {
 	return TABLE[c]
 }
+
+func ColorToDecimal(c color.RGBA) int {
+	return int(c.R)*256*256 + int(c.G)*256 + int(c.B)
+}
