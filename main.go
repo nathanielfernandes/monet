@@ -44,7 +44,7 @@ func view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Write(im.Bytes())
 }
 
-var RLM = rl.NewRatelimitManager(1, 30)
+var RLM = rl.NewRatelimitManager(1, 30*1000)
 
 func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -60,14 +60,21 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	payload := ps.ByName("payload")
 	author := ps.ByName("author")
+	message := ps.ByName("message")
+
+	payload := ps.ByName("payload")
+
+	if author == "" {
+		author = "anonymous"
+	}
 	// truncate author to 32 characters
 	if len(author) > 32 {
 		author = author[:32]
 	}
 
-	message := ps.ByName("message")
+	fmt.Println("new request from", author)
+
 	// truncate message to 256 characters
 	if len(message) > 256 {
 		message = message[:256]
@@ -96,10 +103,13 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				},
 			},
 		},
+		Username:  "monet",
+		AvatarURL: "https://shop.ariustechnology.com/cdn/shop/articles/Claude-Monet-San-Giorgio-Maggiore-at-Dusk_600x.jpg",
 	}
 
 	err := SendWebhook(raw_payload)
 	if err != nil {
+		fmt.Println("Error sending webhook:")
 		log.Fatal(err)
 	}
 
@@ -117,25 +127,27 @@ type DiscPayload struct {
 			URL string `json:"url"`
 		} `json:"image"`
 	} `json:"embeds"`
-	Username    string `json:"username"`
-	AvatarURL   string `json:"avatar_url"`
-	Attachments []struct {
-	} `json:"attachments"`
+	Username  string `json:"username"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 var WEBHOOK_URL = os.Getenv("WEBHOOK_URL")
 
 func SendWebhook(payload DiscPayload) error {
-	data, err := json.Marshal(payload)
+	// convert payload to json
+	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	body := bytes.NewBuffer(data)
-
-	_, err = http.Post(WEBHOOK_URL, "application/json", body)
+	// send payload to webhook
+	resp, err := http.Post(WEBHOOK_URL, "application/json", bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != 204 {
+		return fmt.Errorf("webhook returned status code %d", resp.StatusCode)
 	}
 
 	return nil
