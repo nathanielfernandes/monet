@@ -44,7 +44,7 @@ func view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Write(im.Bytes())
 }
 
-var RLM = rl.NewRatelimitManager(1, 30*1000)
+var RLM = rl.NewRatelimitManager(1, 15*1000)
 
 func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
