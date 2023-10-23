@@ -58,7 +58,16 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	payload := ps.ByName("payload")
 	author := ps.ByName("author")
+	// truncate author to 32 characters
+	if len(author) > 32 {
+		author = author[:32]
+	}
+
 	message := ps.ByName("message")
+	// truncate message to 256 characters
+	if len(message) > 256 {
+		message = message[:256]
+	}
 
 	raw_payload := DiscPayload{
 		Content: "",
@@ -74,12 +83,12 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			{
 				Title:       author,
 				Description: message,
-				URL:         "https://monet.ncp.nathanferns.xyz/" + payload,
+				URL:         "https://monet.b-cdn.net/" + payload,
 				Color:       16748546,
 				Image: struct {
 					URL string `json:"url"`
 				}{
-					URL: "https://monet.ncp.nathanferns.xyz/" + payload,
+					URL: "https://monet.b-cdn.net/" + payload,
 				},
 			},
 		},
