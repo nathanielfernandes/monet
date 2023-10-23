@@ -82,8 +82,11 @@ func send(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	// most common rune
 	found := make(map[rune]int)
-	c := '1'
+	c := '7'
 	for _, r := range payload {
+		if r == '0' {
+			continue
+		}
 		found[r]++
 		if found[r] > found[c] {
 			c = r
